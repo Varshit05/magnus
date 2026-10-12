@@ -7,9 +7,18 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
+  magnus-ml:
+    build:
+      context: ./magnus-ml
+      dockerfile: Dockerfile
+    container_name: magnus-ml
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
 
 volumes:
   postgres_data:

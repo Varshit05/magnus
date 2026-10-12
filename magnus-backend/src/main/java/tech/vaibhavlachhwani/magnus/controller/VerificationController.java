@@ -18,10 +18,16 @@ import java.util.UUID;
 public class VerificationController {
     private final HashService hashService;
     private final VerificationService verificationService;
+    private final tech.vaibhavlachhwani.magnus.service.MlAnalysisService mlAnalysisService;
 
-    public VerificationController(HashService hashService, VerificationService verificationService) {
+    public VerificationController(
+            HashService hashService,
+            VerificationService verificationService,
+            tech.vaibhavlachhwani.magnus.service.MlAnalysisService mlAnalysisService
+    ) {
         this.hashService = hashService;
         this.verificationService = verificationService;
+        this.mlAnalysisService = mlAnalysisService;
     }
 
     @PostMapping()
@@ -31,21 +37,46 @@ public class VerificationController {
         String hash = hashService.generateHmac(file.getBytes());
 
         Optional<Document> doc = verificationService.verifyByHash(hash);
+        VerificationResultDTO.VerificationResultDTOBuilder builder = VerificationResultDTO.builder();
+
+        // Run ML Forensic Analysis (Error Level Analysis + CNN Tamper Detection)
+        mlAnalysisService.enrichWithMlAnalysis(file, builder);
 
         if (doc.isPresent()) {
-            return ResponseEntity.ok(VerificationResultDTO.builder()
-                    .authentic(true)
+            builder.authentic(true)
                     .status("AUTHENTIC")
                     .documentId(doc.get().getId())
-                    .message("The document is authentic and has not been forged.")
-                    .build());
+                    .message("The document is authentic and has not been forged.");
+            return ResponseEntity.ok(builder.build());
         } else {
-            return ResponseEntity.status(404).body(VerificationResultDTO.builder()
-                    .authentic(false)
-                    .status("NOT AUTHENTIC")
-                    .message("The document could not be verified or has been forged.")
-                    .build());
+            builder.authentic(false)
+                    .status("NOT AUTHENTIC");
+            
+            VerificationResultDTO partial = builder.build();
+            if (Boolean.TRUE.equals(partial.getMlAnalyzed()) && partial.getTamperScore() != null && partial.getTamperScore() >= 0.50) {
+                builder.message("Cryptographic match failed. AI Forensic Analysis detected digital tampering (" 
+                        + (int)(partial.getTamperScore() * 100) + "% confidence).");
+            } else {
+                builder.message("The document could not be verified or has been forged.");
+            }
+            return ResponseEntity.status(404).body(builder.build());
         }
+    }
+
+    @PostMapping("/forensic-analysis")
+    public ResponseEntity<VerificationResultDTO> analyzeForensics(
+            @RequestParam("file") MultipartFile file
+    ) {
+        VerificationResultDTO.VerificationResultDTOBuilder builder = VerificationResultDTO.builder();
+        mlAnalysisService.enrichWithMlAnalysis(file, builder);
+        VerificationResultDTO partial = builder.build();
+
+        boolean isAuthentic = partial.getTamperScore() != null && partial.getTamperScore() < 0.50;
+        builder.authentic(isAuthentic)
+               .status(isAuthentic ? "AUTHENTIC" : "TAMPERED")
+               .message("AI Forensic Analysis completed: " + (partial.getTamperVerdict() != null ? partial.getTamperVerdict() : "Processed"));
+
+        return ResponseEntity.ok(builder.build());
     }
 
     @GetMapping("/{id}")

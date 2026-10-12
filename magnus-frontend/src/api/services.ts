@@ -50,6 +50,16 @@ export const verificationService = {
     const response = await apiClient.get<DocumentDTO>(`/verify/${id}`);
     return response.data;
   },
+  analyzeForensics: async (file: File): Promise<VerificationResultDTO> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await apiClient.post<VerificationResultDTO>('/verify/forensic-analysis', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
   checkHealth: async (): Promise<string> => {
     const response = await apiClient.get('/health', { responseType: 'text' });
     return response.data;

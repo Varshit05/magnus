@@ -1,0 +1,9 @@
+magnus-ml-venv/
+__pycache__/
+*.pyc
+.env
+target/
+dist/
+node_modules/
+.DS_Store
+Thumbs.db
