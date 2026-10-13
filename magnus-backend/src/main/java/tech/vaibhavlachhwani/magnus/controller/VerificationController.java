@@ -40,7 +40,7 @@ public class VerificationController {
                     .message("The document is authentic and has not been forged.")
                     .build());
         } else {
-            return ResponseEntity.status(404).body(VerificationResultDTO.builder()
+            return ResponseEntity.ok(VerificationResultDTO.builder()
                     .authentic(false)
                     .status("NOT AUTHENTIC")
                     .message("The document could not be verified or has been forged.")

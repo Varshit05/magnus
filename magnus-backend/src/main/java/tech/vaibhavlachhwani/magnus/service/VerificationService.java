@@ -16,7 +16,7 @@ public class VerificationService {
     }
 
     public Optional<Document> verifyByHash(String hash) {
-        return documentRepository.findByHashValue(hash);
+        return documentRepository.findFirstByHashValue(hash);
     }
 
     public Optional<Document> verifyById(UUID id) {

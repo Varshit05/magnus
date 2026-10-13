@@ -34,7 +34,7 @@ export const VerifyPage: React.FC = () => {
       setDocDetails(data);
       setVerifyResult({ authentic: true, status: "AUTHENTIC", message: "Found in system" });
     },
-    onError: (error: any) => {
+    onError: () => {
       setDocDetails(null);
       setVerifyResult({ authentic: false, status: "NOT_FOUND", message: "Document ID not found in our records." });
       toast({ variant: "destructive", title: "Not Found", description: "Could not find a document with that ID." });

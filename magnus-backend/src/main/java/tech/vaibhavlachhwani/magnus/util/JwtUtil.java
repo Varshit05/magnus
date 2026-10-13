@@ -3,8 +3,10 @@ package tech.vaibhavlachhwani.magnus.util;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 import java.util.Set;
@@ -16,9 +18,16 @@ import java.util.stream.Collectors;
 @Component
 public class JwtUtil {
 
-    // In a real app you would externalise this secret.
-    private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    private final Key key;
     private final long expirationMs = 24 * 60 * 60 * 1000; // 24h
+
+    public JwtUtil(@Value("${app.secret-key}") String secret) {
+        byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
+        if (keyBytes.length < 32) {
+            keyBytes = java.util.Arrays.copyOf(keyBytes, 32);
+        }
+        this.key = Keys.hmacShaKeyFor(keyBytes);
+    }
 
     public String generateToken(String username, Set<tech.vaibhavlachhwani.magnus.model.Role> roles) {
         String roleClaims = roles.stream()

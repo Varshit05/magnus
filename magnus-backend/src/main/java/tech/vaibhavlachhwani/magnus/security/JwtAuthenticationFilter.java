@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import tech.vaibhavlachhwani.magnus.util.JwtUtil;
 import tech.vaibhavlachhwani.magnus.model.Role;
-import tech.vaibhavlachhwani.magnus.service.CustomUserDetailsService;
 
 import java.io.IOException;
 import java.util.Set;

@@ -28,6 +28,10 @@
     </scm>
     <properties>
         <java.version>17</java.version>
+        <!-- JDK 20 crashes in javac when the release flag is combined with Lombok. -->
+        <maven.compiler.release/>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
     </properties>
     <dependencies>
         <dependency>
@@ -75,7 +79,7 @@
         </dependency>
         <dependency>
             <groupId>com.bucket4j</groupId>
-            <artifactId>bucket4j-jdk17-core</artifactId>
+            <artifactId>bucket4j-core</artifactId>
             <version>8.10.1</version>
         </dependency>
         <dependency>
@@ -107,6 +111,9 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
+                    <release combine.self="override"/>
+                    <source>17</source>
+                    <target>17</target>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>
