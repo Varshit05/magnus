@@ -10,6 +10,40 @@ services:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d document_verification"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: ./magnus-backend
+    container_name: magnus-api
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/document_verification
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE: 10MB
+      SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE: 10MB
+      FILE_STORAGE_PATH: /app/storage
+      APP_SECRET_KEY: "NG9kWfxI.{{#*@;kq-ibZZT#MT{]HGA%"
+    ports:
+      - "8080:8080"
+    volumes:
+      - document_storage:/app/storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build: ./magnus-frontend
+    container_name: magnus-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
 
 volumes:
   postgres_data:
+  document_storage:
